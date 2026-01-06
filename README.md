@@ -138,14 +138,5 @@ This dual evaluation approach aligns with industry standards for generative visi
 **Mehdy Mokhtari**
 Data Scientist | Computer Vision & Generative AI Engineer
 
----
 
-## 📄 License
 
-This project is intended for academic and research purposes. Licensing can be adapted for commercial use if required.
-
----
-
-## ⭐ Notes
-
-This repository is designed to reflect **real-world ML engineering standards**, emphasizing clarity, evaluation rigor, and extensibility rather than toy experimentation.
