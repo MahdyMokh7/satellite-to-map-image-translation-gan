@@ -95,21 +95,41 @@ This dual evaluation approach aligns with industry standards for generative visi
 ## 📁 Project Structure (High-Level)
 
 ```
+satellite2map_cgan/
 ├── data/
+│   ├── raw/
 │   ├── train/
-│   └── val/
+│   ├── val/
+│   └── processed/
 ├── models/
 │   ├── generator.py
-│   └── discriminator.py
+│   ├── discriminator.py
+│   └── pretrained/
 ├── training/
+│   ├── train_baseline.py
 │   └── train_pix2pix.py
 ├── evaluation/
-│   └── metrics.py
+│   ├── metrics.py
+│   └── visualize.py
 ├── utils/
-│   └── dataloader.py
+│   ├── dataloader.py
+│   └── helpers.py
 ├── results/
-│   └── samples/
-└── README.md
+│   ├── samples/
+│   └── checkpoints/
+├── notebooks/
+│   ├── phase1_data_validation.ipynb
+│   ├── phase2_design.ipynb
+│   └── pipeline.ipynb
+├── configs/
+│   └── config.yaml
+├── pipeline.py      
+├── DESIGN.md
+├── README.md
+├── requirements.txt
+├── .gitignore 
+└── LICENSE    
+
 ```
 
 ---
