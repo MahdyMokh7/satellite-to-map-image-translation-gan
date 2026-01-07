@@ -92,15 +92,13 @@ This dual evaluation approach aligns with industry standards for generative visi
 
 ---
 
-## 📁 Project Structure (High-Level)
-
-```
 satellite2map_cgan/
 ├── data/
-│   ├── raw/
-│   ├── train/
-│   ├── val/
-│   └── processed/
+│   ├── raw/      
+│   └── processed/  
+│       ├── train/   
+│       ├── val/
+│       └── test/   
 ├── models/
 │   ├── generator.py
 │   ├── discriminator.py
@@ -114,21 +112,23 @@ satellite2map_cgan/
 ├── utils/
 │   ├── dataloader.py
 │   └── helpers.py
+├── preprocessing/ 
+│   └── preprocess_data.py   
 ├── results/
 │   ├── samples/
 │   └── checkpoints/
 ├── notebooks/
 │   ├── phase1_data_validation.ipynb
 │   ├── phase2_design.ipynb
-│   └── pipeline.ipynb
 ├── configs/
 │   └── config.yaml
-├── pipeline.py      
+├── pipeline.ipynb
 ├── DESIGN.md
 ├── README.md
+├── Development-Phases.md
 ├── requirements.txt
-├── .gitignore 
-└── LICENSE    
+├── .gitignore
+└── LICENSE
 
 ```
 

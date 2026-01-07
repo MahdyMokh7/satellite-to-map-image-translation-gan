@@ -1,0 +1,120 @@
+# EVERYTHING THAT SHOULD NOT BE HARD-CODED
+
+
+# =========================
+# General Project Settings
+# =========================
+project:
+  name: satellite2map_cgan
+  experiment_name: pix2pix_64x64_finetune
+  seed: 42
+  device: cuda    # cuda | cpu
+  use_amp: true   # mixed precision for Colab GPU
+
+# =========================
+# Dataset Configuration
+# =========================
+dataset:
+  type: paired_image_translation
+  image_size: 64
+  channels: 3
+  normalization: [-1, 1]
+
+  paths:
+    train: ./data/processed/train
+    val: ./data/processed/val
+    test: ./data/processed/test
+
+  split:
+    train_ratio: 0.7
+    val_ratio: 0.15
+    test_ratio: 0.15
+
+  augmentation:
+    horizontal_flip: true
+    vertical_flip: false
+    random_rotation: true
+    color_jitter: false
+
+# =========================
+# Generator Configuration
+# =========================
+generator:
+  architecture: unet
+  in_channels: 3
+  out_channels: 3
+  base_filters: 32
+  num_downs: 5
+  activation: tanh
+
+  pretrained:
+    use: true
+    path: ./models/pretrained/generator_unet.pth
+    freeze_encoder_layers: 2
+
+# =========================
+# Discriminator Configuration
+# =========================
+discriminator:
+  architecture: patchgan
+  in_channels: 6   # satellite + map concatenated
+  base_filters: 64
+  patch_size: 16
+  activation: leaky_relu
+
+# =========================
+# Training Configuration
+# =========================
+training:
+  mode: pix2pix      # baseline | pix2pix
+  epochs: 50
+  batch_size: 8
+  num_workers: 2
+  log_interval: 100
+  save_interval: 5
+  lr_scheduler: true
+  scheduler_type: step_lr
+  scheduler_step: 10
+  scheduler_gamma: 0.1
+
+  optimizer:
+    type: adam
+    lr: 0.0002
+    beta1: 0.5
+    beta2: 0.999
+
+# =========================
+# Loss Configuration
+# =========================
+loss:
+  adversarial:
+    type: bce
+    weight: 1.0
+
+  l1:
+    weight: 100.0
+
+  ssim:
+    use: false
+    weight: 10.0
+
+# =========================
+# Evaluation Configuration
+# =========================
+evaluation:
+  metrics:
+    psnr: true
+    ssim: true
+
+  visualize:
+    num_samples: 5
+    save_dir: ./results/samples
+
+# =========================
+# Checkpoints & Outputs
+# =========================
+outputs:
+  checkpoint_interval: 5
+  checkpoints_dir: ./results/checkpoints
+  samples_dir: ./results/samples
+  overwrite: false
