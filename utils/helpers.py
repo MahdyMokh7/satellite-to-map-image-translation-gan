@@ -11,7 +11,6 @@ def calculate_psnr(img1, img2, max_val=1.0):
         return 100
     return 20 * torch.log10(max_val / torch.sqrt(mse))
 
-
 # SSIM Calculation (Structural Similarity Index)
 def calculate_ssim(img1, img2):
     img1 = img1.cpu().numpy().transpose(1, 2, 0)

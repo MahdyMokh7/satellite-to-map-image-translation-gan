@@ -5,10 +5,16 @@ import shutil
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-root_dir = '.'
+
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 raw_data_dir = os.path.join(root_dir, 'data', 'raw', 'maps')
 processed_data_dir = os.path.join(root_dir, 'data', 'processed')
+
+# os.path.makedirs(os.path.join(processed_data_dir, 'train'),  exist_ok=True)
+# os.path.makedirs(os.path.join(processed_data_dir, 'train'),  exist_ok=True)
+# os.path.makedirs(os.path.join(processed_data_dir, 'train'),  exist_ok=True)
+
 
 for split in ['train', 'val', 'test']:
     os.makedirs(os.path.join(processed_data_dir, split, 'satellite'), exist_ok=True)
@@ -35,7 +41,7 @@ def process_image(image_path, split, file_index):
     map_save_path = os.path.join(processed_data_dir, split, 'map', f'{file_index}.jpg')
     cv2.imwrite(satellite_save_path, satellite_resized)
     cv2.imwrite(map_save_path, map_resized)
-    print(f"Processed: {image_path} -> {satellite_save_path}, {map_save_path}")
+    print(f"Processed: {image_path} -> {satellite_save_path}, {map_save_path}\n")
 
 file_index = 1
 
@@ -44,4 +50,4 @@ for split, files in zip(['train', 'val', 'test'], [train_files, val_files, test_
         process_image(image_path, split, file_index)
         file_index += 1
 
-print("Preprocessing complete!")
+print("\nPreprocessing complete!")

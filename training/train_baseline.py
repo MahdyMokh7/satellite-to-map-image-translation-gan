@@ -1,4 +1,10 @@
 import os
+import sys
+
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root_dir)
+
+
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -8,11 +14,8 @@ from torch.cuda.amp import GradScaler, autocast
 import yaml
 from models.generator import GeneratorUNet
 from utils.dataloader import SatelliteMapDataset  # <- Dataloader import
-from utils.helpers import calculate_psnr, calculate_ssim, save_checkpoint, save_samples  # <- Helpers import
-from utils.logger import setup_logger  # <- Logger import
-
-
-root_dir = '.'
+from utils.helpers import calculate_psnr, calculate_ssim  # <- Helpers import
+from utils.logger import setup_logger, save_checkpoint, save_samples  # <- Logger import
 
 # Load configuration file
 config_file_path = os.path.join(root_dir, 'configs', 'config.yaml')
@@ -122,10 +125,10 @@ def main():
         val_loss, psnr, ssim = validate(epoch)
 
         if epoch % save_interval == 0:
-            save_checkpoint(generator, optimizer, epoch, train_loss, checkpoint_dir=logging_config["checkpoints_dir"])  # <- Helper function from helpers.py
+            save_checkpoint(generator, optimizer, epoch, train_loss, checkpoint_dir=os.path.join(logging_config["checkpoints_dir"], 'baseline'), filename=f'chekpoint_baseline_{epoch // save_interval}.pth')  # <- Helper function from helpers.py
 
         if epoch % save_interval == 0:
-            save_samples(generator, epoch, fixed_noise, sample_dir=logging_config["samples_dir"])  # <- Helper function from helpers.py
+            save_samples(generator, epoch, fixed_noise, sample_dir=os.path.join(logging_config["samples_dir"], 'baseline'), num_samples=2)  # <- Helper function from helpers.py
 
 if __name__ == "__main__":
     main()
