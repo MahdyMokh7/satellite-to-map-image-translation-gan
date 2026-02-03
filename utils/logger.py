@@ -7,7 +7,7 @@ import torch
 from torchvision.utils import save_image
 
 # Set up logging configuration
-def setup_logger(log_dir='./logs'):
+def setup_logger(log_dir='./results/logs'):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     
@@ -26,7 +26,7 @@ def setup_logger(log_dir='./logs'):
 
 
 # Save model checkpoint
-def save_checkpoint(model, optimizer, epoch, loss, checkpoint_dir='./checkpoints', filename='checkpoint.pth'):
+def save_checkpoint(model, optimizer, epoch, loss, checkpoint_dir='./results/checkpoints', filename='checkpoint.pth'):
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
     
@@ -40,7 +40,7 @@ def save_checkpoint(model, optimizer, epoch, loss, checkpoint_dir='./checkpoints
 
 
 # Save generated sample images from the generator
-def save_samples(generator, epoch, fixed_noise, sample_dir='./samples', num_samples=5):
+def save_samples(generator, epoch, fixed_noise, sample_dir='./results/samples', num_samples=5):
     if not os.path.exists(sample_dir):
         os.makedirs(sample_dir)
     

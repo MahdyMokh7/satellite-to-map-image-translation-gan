@@ -44,8 +44,10 @@ generator:
   in_channels: 3
   out_channels: 3
   base_filters: 32
-  num_downs: 5
+  num_downs: 4
   activation: tanh
+  loss_weight:
+    l1: 100.0
 
   pretrained:
     use: true
@@ -58,9 +60,11 @@ generator:
 discriminator:
   architecture: patchgan
   in_channels: 6   # satellite + map concatenated
-  base_filters: 64
+  base_filters: 32
   patch_size: 16
   activation: leaky_relu
+  loss_weight:
+    adversarial: 1.0
 
 # =========================
 # Training Configuration
@@ -69,7 +73,7 @@ training:
   mode: pix2pix      # baseline | pix2pix
   epochs: 50
   batch_size: 8
-  num_workers: 2
+  num_workers: 1
   log_interval: 100
   save_interval: 5
   lr_scheduler: true
@@ -108,13 +112,14 @@ evaluation:
 
   visualize:
     num_samples: 5
-    save_dir: ./results/samples
+    save_dir: ./results/samples/cgan
 
 # =========================
 # Checkpoints & Outputs
 # =========================
 outputs:
   checkpoint_interval: 5
-  checkpoints_dir: ./results/checkpoints
-  samples_dir: ./results/samples
+  checkpoints_dir: ./results/checkpoints/cgan
+  samples_dir: ./results/samples/cgan
+  logging_dir: ./results/logs/cgan
   overwrite: false
