@@ -181,6 +181,9 @@ def main():
         patience = 10 
         epochs_no_improve = 0
 
+        custom_note = input("Type Developers Custom Note:")
+        logger.info(f"\nStarting Training...\nDeveloper Custom Note: {custom_note}\n\n")
+
         for epoch in range(1, epochs + 1):
             logger.info("=" * 50)
             logger.info(f"Epoch {epoch}/{epochs}")

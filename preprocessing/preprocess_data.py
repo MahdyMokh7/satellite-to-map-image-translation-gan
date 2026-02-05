@@ -121,6 +121,8 @@ num_augments = 3  # each original image generates 3 more
 for split, files in zip(['train', 'val', 'test'], [train_files, val_files, test_files]):
     for image_path in files:
         file_index = process_and_augment_image(image_path, split, file_index, num_augments=num_augments)
+        # process_image(image_path, split, file_index)
+        # file_index += 1
 
 
 print("\nPreprocessing complete!")
