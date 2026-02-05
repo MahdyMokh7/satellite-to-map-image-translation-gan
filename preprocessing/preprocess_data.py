@@ -61,7 +61,7 @@ def augment_pair(sat_img, map_img, num_augments=3):
             sat_aug = cv2.convertScaleAbs(sat_aug, alpha=alpha, beta=beta)
 
         # 4. Optional: add small Gaussian noise
-        if random.random() < 0.3:
+        if random.random() < 0.1:
             noise = np.random.normal(0, 5, sat_aug.shape).astype(np.uint8)
             sat_aug = cv2.add(sat_aug, noise)
 

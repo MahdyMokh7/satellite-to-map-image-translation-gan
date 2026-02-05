@@ -145,3 +145,17 @@ You already know everything works because of Phases 1–4.
 * Failure cases
 * Visual results
 * Comparison to baseline
+
+
+### phase 7 - **Extra Work** 
+
+* UI (handcrafted)
+
+  - Flask (Python backend)
+
+  - HTML/CSS/JavaScript frontend
+
+  - File upload form
+
+* UI (raedy made tool)
+   - Gradio
