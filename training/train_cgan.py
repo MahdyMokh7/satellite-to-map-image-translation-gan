@@ -40,8 +40,7 @@ num_workers = training_config["num_workers"]
 log_interval = training_config["log_interval"]
 save_interval = training_config["save_interval"]
 
-lambda_L1 = generator_config["loss_weight"]["l1"]
-
+lambda_L1 = loss_config["l1"]["weight"]
 adv_weight = loss_config["adversarial"]["weight"]
 
 device = torch.device(config["project"]["device"] if torch.cuda.is_available() else "cpu")

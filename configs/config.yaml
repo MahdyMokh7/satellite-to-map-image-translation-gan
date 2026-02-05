@@ -46,8 +46,6 @@ generator:
   base_filters: 32
   num_downs: 4
   activation: tanh
-  loss_weight:
-    l1: 100.0
 
   pretrained:
     use: true
@@ -93,10 +91,10 @@ training:
 loss:
   adversarial:
     type: bce
-    weight: 1.0
+    weight: 1.5
 
   l1:
-    weight: 100.0
+    weight: 50.0
 
   ssim:
     use: false
