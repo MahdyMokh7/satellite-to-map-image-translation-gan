@@ -39,7 +39,7 @@ num_workers = training_config["num_workers"]
 
 device_str = config["project"]["device"] if torch.cuda.is_available() else "cpu"
 
-logger = setup_logger(log_dir='./results/baseline/logs')
+logger = setup_logger(log_dir='./results/logs/baseline')
 
 data_dir = os.path.join(root_dir, 'data', 'processed')
 train_loader = get_dataloader(

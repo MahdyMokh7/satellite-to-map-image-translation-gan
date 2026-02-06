@@ -31,14 +31,20 @@ generator_config = config["generator"]
 discriminator_config = config["discriminator"]
 logging_config = config["outputs"]
 loss_config = config["loss"]
+schedular_config = training_config["schedular"]
 
 batch_size = training_config["batch_size"]
 epochs = training_config["epochs"]
-lr = training_config["optimizer"]["lr"]
+lr_G = training_config["optimizer"]["lr_G"]
+lr_D = training_config["optimizer"]["lr_D"]
 beta1 = training_config["optimizer"]["beta1"]
+beta2 = training_config["optimizer"]["beta2"]
 num_workers = training_config["num_workers"]
 log_interval = training_config["log_interval"]
 save_interval = training_config["save_interval"]
+
+schedular_patience = schedular_config['patience']
+schedular_factor = schedular_config['factor']
 
 lambda_L1 = loss_config["l1"]["weight"]
 adv_weight = loss_config["adversarial"]["weight"]
@@ -69,13 +75,12 @@ adversarial_loss = nn.BCEWithLogitsLoss()
 l1_loss = nn.L1Loss()
 
 # --- Optimizers ---
-optimizer_G = optim.Adam(generator.parameters(), lr=lr, betas=(beta1, 0.999))
-optimizer_D = optim.Adam(discriminator.parameters(), lr=lr, betas=(beta1, 0.999))
+optimizer_G = optim.Adam(generator.parameters(), lr=lr_G, betas=(beta1, beta2))
+optimizer_D = optim.Adam(discriminator.parameters(), lr=lr_D, betas=(beta1, beta2))
 
 # --- Learning Rate Schedulers (Reduce LR on plateau) ---
-scheduler_G = optim.lr_scheduler.ReduceLROnPlateau(optimizer_G, mode='max', factor=0.5, patience=5, verbose=True)
-scheduler_D = optim.lr_scheduler.ReduceLROnPlateau(optimizer_D, mode='max', factor=0.5, patience=5, verbose=True)
-
+scheduler_G = optim.lr_scheduler.ReduceLROnPlateau(optimizer_G, mode='max', factor=schedular_factor, patience=schedular_patience, verbose=True)
+scheduler_D = optim.lr_scheduler.ReduceLROnPlateau(optimizer_D, mode='max', factor=schedular_factor, patience=schedular_patience, verbose=True)
 
 # # --- Mixed precision ---
 # scaler_G = GradScaler()
@@ -181,7 +186,7 @@ def main():
         epochs_no_improve = 0
 
         custom_note = input("Type Developers Custom Note:")
-        logger.info(f"\nStarting Training...\nDeveloper Custom Note: {custom_note}\n\n")
+        logger.info(f"Starting Training...\nDeveloper Custom Note: {custom_note}\n")
 
         for epoch in range(1, epochs + 1):
             logger.info("=" * 50)
@@ -247,15 +252,13 @@ def main():
 
             # Early stopping
             if epochs_no_improve >= patience:
-                logger.info(f"No improvement in SSIM for {patience} epochs. Stopping training early.")
+                logger.info(f"No improvement in SSIM for {patience} epochs. Stopping training early.\n")
                 break
 
     # Saving training history
     except (KeyboardInterrupt, EOFError):
         logger.info("Training interrupted by user (Ctrl + C).")
         save_history_and_exit(history)
-
-
 
 
 if __name__ == "__main__":
