@@ -15,7 +15,7 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, root_dir)
 
 from models.generator import GeneratorUNet
-from models.discriminator import DiscriminatorPatchGAN
+from models.discriminator import DiscriminatorPatchGAN32, DiscriminatorPatchGAN16
 from utils.dataloader import get_dataloader, transform
 from utils.helpers import calculate_psnr, calculate_ssim
 from utils.logger import setup_logger, save_checkpoint, save_samples
@@ -48,6 +48,7 @@ schedular_factor = schedular_config['factor']
 
 lambda_L1 = loss_config["l1"]["weight"]
 adv_weight = loss_config["adversarial"]["weight"]
+lambda_SSIM = loss_config["ssim"]["weight"]
 
 device = torch.device(config["project"]["device"] if torch.cuda.is_available() else "cpu")
 logger = setup_logger(log_dir=logging_config["logging_dir"])
@@ -64,7 +65,7 @@ generator = GeneratorUNet(
     base_filters=generator_config["base_filters"]
 ).to(device)
 
-discriminator = DiscriminatorPatchGAN(
+discriminator = DiscriminatorPatchGAN32(
     in_channels=generator_config["in_channels"],
     out_channels=generator_config["out_channels"],
     base_filters=discriminator_config["base_filters"]
@@ -79,8 +80,8 @@ optimizer_G = optim.Adam(generator.parameters(), lr=lr_G, betas=(beta1, beta2))
 optimizer_D = optim.Adam(discriminator.parameters(), lr=lr_D, betas=(beta1, beta2))
 
 # --- Learning Rate Schedulers (Reduce LR on plateau) ---
-scheduler_G = optim.lr_scheduler.ReduceLROnPlateau(optimizer_G, mode='max', factor=schedular_factor, patience=schedular_patience, verbose=True)
-scheduler_D = optim.lr_scheduler.ReduceLROnPlateau(optimizer_D, mode='max', factor=schedular_factor, patience=schedular_patience, verbose=True)
+scheduler_G = optim.lr_scheduler.ReduceLROnPlateau(optimizer_G, mode='max', factor=schedular_factor, patience=schedular_patience)
+scheduler_D = optim.lr_scheduler.ReduceLROnPlateau(optimizer_D, mode='max', factor=schedular_factor, patience=schedular_patience)
 
 # # --- Mixed precision ---
 # scaler_G = GradScaler()
@@ -102,12 +103,14 @@ def train_one_epoch(epoch):
         fake_map = generator(satellite)
         pred_fake = discriminator(satellite, fake_map)
 
+
         # Adversarial ground truths (match shape dynamically)
         valid = torch.ones_like(pred_fake, device=device)
 
         loss_G_adv = adversarial_loss(pred_fake, valid) * adv_weight
         loss_G_l1 = l1_loss(fake_map, real_map) * lambda_L1
-        loss_G = loss_G_adv + loss_G_l1
+        loss_G_ssim = (1 - calculate_ssim(fake_map, real_map)) * lambda_SSIM  # refinement added
+        loss_G = loss_G_adv + loss_G_l1 + loss_G_ssim
         loss_G.backward()
         torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=5.0)
         optimizer_G.step()
@@ -182,11 +185,11 @@ def main():
         }
 
         best_ssim = 0.0
-        patience = 10 
+        patience = 10
         epochs_no_improve = 0
 
         custom_note = input("Type Developers Custom Note:")
-        logger.info(f"Starting Training...\nDeveloper Custom Note: {custom_note}\n")
+        logger.info(f"\nStarting Training...\nDeveloper Custom Note: {custom_note}\n")
 
         for epoch in range(1, epochs + 1):
             logger.info("=" * 50)

@@ -30,7 +30,7 @@ logging_config = config["outputs"]
 
 batch_size = training_config["batch_size"]
 epochs = training_config["epochs"]
-lr = training_config["optimizer"]["lr"]
+lr = training_config["optimizer"]["lr_G"]
 beta1 = training_config["optimizer"]["beta1"]
 device = torch.device(config["project"]["device"] if torch.cuda.is_available() else "cpu")
 log_interval = training_config["log_interval"]
@@ -149,7 +149,7 @@ def main():
         logger.info("=" * 50)   
 
         if epoch % save_interval == 0:
-            save_checkpoint(generator, optimizer, epoch, train_loss, checkpoint_dir=os.path.join(".","results", "checkpoints","baseline"), filename=f'chekpoint_baseline_{epoch // save_interval}.pth')
+            save_checkpoint(generator, optimizer, epoch, train_loss, checkpoint_dir=os.path.join(".","results", "checkpoints","baseline"), filename=f'chekpoint_baseline_{epoch}.pth')
 
         if epoch % save_interval == 0:
             save_samples(generator, epoch, fixed_noise, sample_dir=os.path.join(".","results", "samples", 'baseline'), num_samples=2)

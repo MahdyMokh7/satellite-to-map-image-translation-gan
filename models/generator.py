@@ -60,26 +60,33 @@ class GeneratorUNet(nn.Module):
         self.up1 = nn.Sequential(
             nn.ConvTranspose2d(base_filters * 8, base_filters * 4, 4, 2, 1),  # Output: (batch_size, 128, 8, 8)
             nn.BatchNorm2d(base_filters * 4),
-            nn.ReLU(True)
+            nn.LeakyReLU(0.2, True)
         )
 
         self.up2 = nn.Sequential(
             nn.ConvTranspose2d(base_filters * 4 + base_filters * 4, base_filters * 2, 4, 2, 1),  # Output: (batch_size, 64, 16, 16)
             nn.BatchNorm2d(base_filters * 2),
-            nn.ReLU(True)
+            nn.LeakyReLU(0.2, True)
         )
 
         self.up3 = nn.Sequential(
             nn.ConvTranspose2d(base_filters * 2 + base_filters * 2, base_filters, 4, 2, 1),  # Output: (batch_size, 32, 32, 32)
             nn.BatchNorm2d(base_filters),
-            nn.ReLU(True)
+            nn.LeakyReLU(0.2, True)
         )
 
         self.up4 = nn.Sequential(
-                nn.ConvTranspose2d(base_filters + base_filters, base_filters, 4, 2, 1),  # Output: (batch_size, 32, 64, 64)
-                nn.BatchNorm2d(base_filters),
-                nn.ReLU(True)
-            )
+            nn.ConvTranspose2d(base_filters + base_filters, base_filters, 4, 2, 1),
+            nn.BatchNorm2d(base_filters),
+            nn.LeakyReLU(0.2, True)
+        )
+        
+        self.up4_1 = nn.Sequential(
+            nn.Conv2d(base_filters, base_filters, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(base_filters),
+            nn.LeakyReLU(0.2, inplace=True)
+        )
+
 
         self.final = nn.Sequential(
             nn.Conv2d(base_filters, out_channels, 3, 1, 1),  # Output: (batch_size, 3, 64, 64)
@@ -109,6 +116,8 @@ class GeneratorUNet(nn.Module):
         # Final upsampling layer (without skip connection)
         x9 = self.up4(x8)  # Output: (batch_size, 32, 64, 64)
 
+        x10 = self.up4_1(x9)  # Extra refinement layer: (batch_size, 32, 128, 128)
+
         # Final layer to get the output
-        out = self.final(x9)  # Output: (batch_size, 3, 64, 64)
+        out = self.final(x10)  # Output: (batch_size, 3, 64, 64)
         return out

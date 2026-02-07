@@ -43,7 +43,7 @@ generator:
   architecture: unet
   in_channels: 3
   out_channels: 3
-  base_filters: 32
+  base_filters: 64
   num_downs: 4
   activation: tanh
 
@@ -59,9 +59,9 @@ discriminator:
   architecture: patchgan
   in_channels: 6   # satellite + map concatenated
   base_filters: 32
-  patch_size: 16
+  patch_size: 32
   activation: leaky_relu
-  
+
 # =========================
 # Training Configuration
 # =========================
@@ -81,7 +81,7 @@ training:
   optimizer:
     type: adam
     lr_G: 0.0002
-    lr_D: 0.0001
+    lr_D: 0.00005
     beta1: 0.5
     beta2: 0.999
 
@@ -94,10 +94,10 @@ loss:
     weight: 0.5
 
   l1:
-    weight: 100.0
+    weight: 200.0
 
   ssim:
-    use: false
+    use: true
     weight: 10.0
 
 # =========================
