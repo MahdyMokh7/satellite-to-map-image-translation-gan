@@ -15,7 +15,7 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, root_dir)
 
 from models.generator import GeneratorUNet
-from models.discriminator import DiscriminatorPatchGAN32, DiscriminatorPatchGAN16
+from models.discriminator import DiscriminatorPatchGAN64
 from utils.dataloader import get_dataloader, transform
 from utils.helpers import calculate_psnr, calculate_ssim
 from utils.logger import setup_logger, save_checkpoint, save_samples
@@ -65,7 +65,7 @@ generator = GeneratorUNet(
     base_filters=generator_config["base_filters"]
 ).to(device)
 
-discriminator = DiscriminatorPatchGAN32(
+discriminator = DiscriminatorPatchGAN64(
     in_channels=generator_config["in_channels"],
     out_channels=generator_config["out_channels"],
     base_filters=discriminator_config["base_filters"]
@@ -172,7 +172,7 @@ def save_history_and_exit(history):
 
 def main():
     try:
-        fixed_noise = torch.randn(8, 3, 64, 64, device=device)  # For sample saving
+        fixed_noise = torch.randn(8, 3, 128, 128, device=device)  # For sample saving
 
         history = {
             'train_G_loss': [],

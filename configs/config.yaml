@@ -6,7 +6,7 @@
 # =========================
 project:
   name: satellite2map_cgan
-  experiment_name: pix2pix_64x64_finetune
+  experiment_name: pix2pix_128x128_finetune
   seed: 42
   device: cuda    # cuda | cpu
   use_amp: true   # mixed precision for Colab GPU
@@ -16,7 +16,7 @@ project:
 # =========================
 dataset:
   type: paired_image_translation
-  image_size: 64
+  image_size: 128
   channels: 3
   normalization: [-1, 1]
 

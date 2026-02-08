@@ -19,9 +19,134 @@ Shape:
 Example: 64×64 RGB → 32×32 with 64 feature maps
 """
 
+# I used this for Image Size: 128x128
 class GeneratorUNet(nn.Module):
-    def __init__(self, in_channels=3, out_channels=3, base_filters=32, num_downs=4):
+    def __init__(self, in_channels=3, out_channels=3, base_filters=64, num_downs=5):
         super(GeneratorUNet, self).__init__()
+
+        # Encoder (Downsampling)
+        self.down1 = nn.Sequential(
+            nn.Conv2d(in_channels, base_filters, 4, 2, 1),  # Output: (batch_size, 64, 64, 64)
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.down2 = nn.Sequential(
+            nn.Conv2d(base_filters, base_filters * 2, 4, 2, 1),  # Output: (batch_size, 128, 32, 32)
+            nn.BatchNorm2d(base_filters * 2),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.down3 = nn.Sequential(
+            nn.Conv2d(base_filters * 2, base_filters * 4, 4, 2, 1),  # Output: (batch_size, 256, 16, 16)
+            nn.BatchNorm2d(base_filters * 4),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.down4 = nn.Sequential(
+            nn.Conv2d(base_filters * 4, base_filters * 8, 4, 2, 1),  # Output: (batch_size, 512, 8, 8)
+            nn.BatchNorm2d(base_filters * 8),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        # Added Extra Encoder Layer
+        self.down5 = nn.Sequential(
+            nn.Conv2d(base_filters * 8, base_filters * 16, 4, 2, 1),  # Output: (batch_size, 1024, 4, 4)
+            nn.BatchNorm2d(base_filters * 16),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.bottleneck = nn.Sequential(
+            nn.Conv2d(base_filters * 16, base_filters * 16, 3, 1, 1),  # Output: (batch_size, 1024, 4, 4)
+            nn.BatchNorm2d(base_filters * 16),
+            nn.ReLU(True),
+            nn.Conv2d(base_filters * 16, base_filters * 16, 3, 1, 1),  # Output: (batch_size, 1024, 4, 4)
+            nn.BatchNorm2d(base_filters * 16),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        # Decoder (Upsampling)
+        self.up1 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters * 16, base_filters * 8, 4, 2, 1),  # Output: (batch_size, 512, 8, 8)
+            nn.BatchNorm2d(base_filters * 8),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.up2 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters * 8 + base_filters * 8, base_filters * 4, 4, 2, 1),  # Output: (batch_size, 256, 16, 16)
+            nn.BatchNorm2d(base_filters * 4),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.up3 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters * 4 + base_filters * 4, base_filters * 2, 4, 2, 1),  # Output: (batch_size, 128, 32, 32)
+            nn.BatchNorm2d(base_filters * 2),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.up4 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters * 2 + base_filters * 2, base_filters, 4, 2, 1),   # Output: (batch_size, 64, 64, 64)
+            nn.BatchNorm2d(base_filters),
+            nn.LeakyReLU(0.2, True)
+        )
+        
+        self.up5 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters + base_filters, base_filters, kernel_size=4, stride=2, padding=1),  # Output: (batch_size, 64, 128, 128)
+            nn.BatchNorm2d(base_filters),
+            nn.LeakyReLU(0.2, inplace=True)
+        )
+
+        self.final = nn.Sequential(
+            nn.Conv2d(base_filters, out_channels, 3, 1, 1),  # Output: (batch_size, 3, 128, 128)
+            nn.Tanh() 
+        )
+    
+    def forward(self, x):
+        # Encoder path with downsampling
+        x1 = self.down1(x)  # Output: (batch_size, 64, 64, 64)
+        x2 = self.down2(x1)  # Output: (batch_size, 128, 32, 32)
+        x3 = self.down3(x2)  # Output: (batch_size, 256, 16, 16)
+        x4 = self.down4(x3)  # Output: (batch_size, 512, 8, 8)
+        x5 = self.down5(x4)  # Output: (batch_size, 1024, 4, 4)
+
+        # Bottleneck
+        x6 = self.bottleneck(x5)  # Output: (batch_size, 1024, 4, 4)
+
+        # Decoder path with upsampling and skip connections
+        x7 = self.up1(x6)  # Output: (batch_size, 512, 8, 8)
+        x7 = torch.cat([x7, x4], dim=1)  # Skip connection: (batch_size, 1024, 8, 8)
+
+        x8 = self.up2(x7)  # Output: (batch_size, 256, 16, 16)
+        x8 = torch.cat([x8, x3], dim=1)  # Skip connection: (batch_size, 512, 16, 16)
+
+        x9 = self.up3(x8)  # Output: (batch_size, 128, 32, 32)
+        x9 = torch.cat([x9, x2], dim=1)  # Skip connection: (batch_size, 256, 32, 32)
+
+        x10 = self.up4(x9)  # Output: (batch_size, 64, 64, 64)
+        x10 = torch.cat([x10, x1], dim=1)  # Skip connection: (batch_size, 128, 64, 64)
+
+        # Updated to up5 with concatenation
+        x11 = self.up5(x10)  # Output: (batch_size, 64, 128, 128)
+
+        # Final layer to get the output
+        out = self.final(x11)  # Output: (batch_size, 3, 128, 128)
+        return out
+
+
+
+
+
+
+
+
+
+
+
+
+
+# I used this for Image Size: 64*64
+class GeneratorUNet64(nn.Module):
+    def __init__(self, in_channels=3, out_channels=3, base_filters=32, num_downs=4):
+        super(GeneratorUNet64, self).__init__()
 
         # Encoder (Downsampling)
         self.down1 = nn.Sequential(
@@ -76,17 +201,16 @@ class GeneratorUNet(nn.Module):
         )
 
         self.up4 = nn.Sequential(
-            nn.ConvTranspose2d(base_filters + base_filters, base_filters, 4, 2, 1),
+            nn.ConvTranspose2d(base_filters + base_filters, base_filters, 4, 2, 1),   # Output: (batch_size, 32, 64, 64)
             nn.BatchNorm2d(base_filters),
             nn.LeakyReLU(0.2, True)
         )
         
         self.up4_1 = nn.Sequential(
-            nn.Conv2d(base_filters, base_filters, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(base_filters, base_filters, kernel_size=3, stride=1, padding=1),  # Output: (batch_size, 32, 64, 64)
             nn.BatchNorm2d(base_filters),
             nn.LeakyReLU(0.2, inplace=True)
         )
-
 
         self.final = nn.Sequential(
             nn.Conv2d(base_filters, out_channels, 3, 1, 1),  # Output: (batch_size, 3, 64, 64)

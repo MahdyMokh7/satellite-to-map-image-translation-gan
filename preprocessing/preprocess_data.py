@@ -78,8 +78,8 @@ def process_and_augment_image(image_path, split, file_index, num_augments=3):
 
     satellite = image[:, :600, :]
     map_img = image[:, 600:, :]
-    satellite_resized = cv2.resize(satellite, (64, 64))
-    map_resized = cv2.resize(map_img, (64, 64))
+    satellite_resized = cv2.resize(satellite, (128, 128))
+    map_resized = cv2.resize(map_img, (128, 128))
 
     # Save original
     sat_save_path = os.path.join(processed_data_dir, split, 'satellite', f'{file_index}.jpg')
@@ -106,8 +106,8 @@ def process_image(image_path, split, file_index):
         return
     satellite = image[:, :600, :]
     map_img = image[:, 600:, :]
-    satellite_resized = cv2.resize(satellite, (64, 64))
-    map_resized = cv2.resize(map_img, (64, 64))
+    satellite_resized = cv2.resize(satellite, (128, 128))
+    map_resized = cv2.resize(map_img, (128, 128))
     satellite_save_path = os.path.join(processed_data_dir, split, 'satellite', f'{file_index}.jpg')
     map_save_path = os.path.join(processed_data_dir, split, 'map', f'{file_index}.jpg')
     cv2.imwrite(satellite_save_path, satellite_resized)

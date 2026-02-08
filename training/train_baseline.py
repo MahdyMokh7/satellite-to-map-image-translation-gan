@@ -129,7 +129,7 @@ def validate(epoch):
     return avg_val_loss, avg_psnr, avg_ssim
 
 def main():
-    fixed_noise = torch.randn(8, 3, 64, 64, device=device)
+    fixed_noise = torch.randn(8, 3, 128, 128, device=device)
 
     for epoch in range(1, epochs + 1):
 
