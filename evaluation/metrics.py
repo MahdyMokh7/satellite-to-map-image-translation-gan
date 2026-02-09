@@ -1,16 +1,41 @@
 import torch
+import os
+import sys
+
+# --- Project setup ---
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root_dir)
+
 from utils.helpers import calculate_psnr, calculate_ssim
 from models.generator import GeneratorUNet
-from utils.dataloader import get_dataloader
-import os
+from utils.dataloader import get_dataloader, transform
 import yaml
 
-config = yaml.safe_load(open('config.yaml'))
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = GeneratorUNet(in_channels=3, out_channels=3, base_filters=32).to(device)
-model.load_state_dict(torch.load('path_to_checkpoint'))
+config_file_path = os.path.join(root_dir, 'configs', 'config.yaml')
+with open(config_file_path, "r") as f:
+    config = yaml.safe_load(f)
 
-test_loader = get_dataloader(config['data_dir'], split='test', batch_size=1, shuffle=False)
+training_config = config["training"]
+dataset_config = config["dataset"]
+generator_config = config["generator"]
+discriminator_config = config["discriminator"]
+logging_config = config["outputs"]
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = GeneratorUNet(
+    in_channels=generator_config['in_channels'], 
+    out_channels=generator_config['out_channels'], 
+    base_filters=generator_config['base_filters']
+).to(device)
+
+checkpoint_path = os.path.join(root_dir, 'results', 'checkpoints', 'cgan', 'generator_best.pth')
+
+checkpoint = torch.load(checkpoint_path, map_location=device)
+model.load_state_dict(checkpoint["model_state_dict"])
+
+data_dir = os.path.join(root_dir, *dataset_config['paths']["data_dir"].split('/'))
+
+test_loader = get_dataloader(data_dir=data_dir, split='test', batch_size=1, shuffle=False, transform=transform)
 
 psnr_values, ssim_values = [], []
 with torch.no_grad():

@@ -20,9 +20,9 @@ Example: 64×64 RGB → 32×32 with 64 feature maps
 """
 
 # I used this for Image Size: 128x128
-class GeneratorUNet(nn.Module):
+class GeneratorUNet128(nn.Module):
     def __init__(self, in_channels=3, out_channels=3, base_filters=64, num_downs=5):
-        super(GeneratorUNet, self).__init__()
+        super(GeneratorUNet128, self).__init__()
 
         # Encoder (Downsampling)
         self.down1 = nn.Sequential(
@@ -144,9 +144,9 @@ class GeneratorUNet(nn.Module):
 
 
 # I used this for Image Size: 64*64
-class GeneratorUNet64(nn.Module):
+class GeneratorUNet(nn.Module):
     def __init__(self, in_channels=3, out_channels=3, base_filters=32, num_downs=4):
-        super(GeneratorUNet64, self).__init__()
+        super(GeneratorUNet, self).__init__()
 
         # Encoder (Downsampling)
         self.down1 = nn.Sequential(
