@@ -3,6 +3,7 @@ import cv2
 import random
 import shutil
 import numpy as np
+import torchvision.transforms as T
 from sklearn.model_selection import train_test_split
 
 
@@ -31,6 +32,32 @@ val_files, test_files = train_test_split(temp_files, test_size=0.5, random_state
 import cv2
 import numpy as np
 import random
+
+from torchvision import transforms as T
+import torch
+from PIL import Image
+
+# Define the preprocessing function
+def preprocess_image_for_ui(input_image: Image.Image, device: str = "cpu"):
+    """
+    Preprocesses a PIL image for input into the model.
+    
+    Args:
+        input_image (PIL.Image): The input image to be processed.
+        device (str): The device to move the tensor to ('cpu' or 'cuda').
+
+    Returns:
+        torch.Tensor: The preprocessed image tensor.
+    """
+    preprocess = T.Compose([
+        T.Resize((128, 128)),
+        T.ToTensor(),
+        T.Normalize(mean=[0.5]*3, std=[0.5]*3)
+    ])
+
+    # Apply transformations and add batch dimension
+    input_tensor = preprocess(input_image).unsqueeze(0).to(device)
+    return input_tensor
 
 def augment_pair(sat_img, map_img, num_augments=3):
     """Augment a single satellite-map pair and return list of augmented pairs."""
