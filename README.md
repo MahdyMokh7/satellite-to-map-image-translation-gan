@@ -125,7 +125,7 @@ satellite2map_cgan/
 │
 ├── training/
 │   ├── train_baseline.py
-│   └── train_pix2pix.py
+│   └── train_cgan.py
 │
 ├── evaluation/
 │   ├── metrics.py

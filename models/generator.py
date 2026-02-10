@@ -19,6 +19,127 @@ Shape:
 Example: 64×64 RGB → 32×32 with 64 feature maps
 """
 
+# I used this for Image Size: 64*64 & 128x128
+class GeneratorUNet(nn.Module):
+    def __init__(self, in_channels=3, out_channels=3, base_filters=32, num_downs=4):
+        super(GeneratorUNet, self).__init__()
+
+        # Encoder (Downsampling)
+        self.down1 = nn.Sequential(
+            nn.Conv2d(in_channels, base_filters, 4, 2, 1),  # Output: (batch_size, 32, 32, 32)
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.down2 = nn.Sequential(
+            nn.Conv2d(base_filters, base_filters * 2, 4, 2, 1),  # Output: (batch_size, 64, 16, 16)
+            nn.BatchNorm2d(base_filters * 2),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.down3 = nn.Sequential(
+            nn.Conv2d(base_filters * 2, base_filters * 4, 4, 2, 1),  # Output: (batch_size, 128, 8, 8)
+            nn.BatchNorm2d(base_filters * 4),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.down4 = nn.Sequential(
+            nn.Conv2d(base_filters * 4, base_filters * 8, 4, 2, 1),  # Output: (batch_size, 256, 4, 4)
+            nn.BatchNorm2d(base_filters * 8),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.bottleneck = nn.Sequential(
+            nn.Conv2d(base_filters * 8, base_filters * 8, 3, 1, 1),  # Output: (batch_size, 256, 4, 4)
+            nn.BatchNorm2d(base_filters * 8),
+            nn.ReLU(True),
+            nn.Conv2d(base_filters * 8, base_filters * 8, 3, 1, 1),  # Output: (batch_size, 256, 4, 4)
+            nn.BatchNorm2d(base_filters * 8),
+            nn.ReLU(True)
+        )
+
+        # Decoder (Upsampling)
+        self.up1 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters * 8, base_filters * 4, 4, 2, 1),  # Output: (batch_size, 128, 8, 8)
+            nn.BatchNorm2d(base_filters * 4),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.up2 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters * 4 + base_filters * 4, base_filters * 2, 4, 2, 1),  # Output: (batch_size, 64, 16, 16)
+            nn.BatchNorm2d(base_filters * 2),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.up3 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters * 2 + base_filters * 2, base_filters, 4, 2, 1),  # Output: (batch_size, 32, 32, 32)
+            nn.BatchNorm2d(base_filters),
+            nn.LeakyReLU(0.2, True)
+        )
+
+        self.up4 = nn.Sequential(
+            nn.ConvTranspose2d(base_filters + base_filters, base_filters, 4, 2, 1),   # Output: (batch_size, 32, 64, 64)
+            nn.BatchNorm2d(base_filters),
+            nn.LeakyReLU(0.2, True)
+        )
+        
+        self.up4_1 = nn.Sequential(
+            nn.Conv2d(base_filters, base_filters, kernel_size=3, stride=1, padding=1),  # Output: (batch_size, 32, 64, 64)
+            nn.BatchNorm2d(base_filters),
+            nn.LeakyReLU(0.2, inplace=True)
+        )
+
+        self.final = nn.Sequential(
+            nn.Conv2d(base_filters, out_channels, 3, 1, 1),  # Output: (batch_size, 3, 64, 64)
+            nn.Tanh() 
+        )
+    
+    def forward(self, x):
+        # Encoder path with downsampling
+        x1 = self.down1(x)  # Output: (batch_size, 32, 32, 32)
+        x2 = self.down2(x1)  # Output: (batch_size, 64, 16, 16)
+        x3 = self.down3(x2)  # Output: (batch_size, 128, 8, 8)
+        x4 = self.down4(x3)  # Output: (batch_size, 256, 4, 4)
+
+        # Bottleneck
+        x5 = self.bottleneck(x4)  # Output: (batch_size, 256, 4, 4)
+
+        # Decoder path with upsampling and skip connections
+        x6 = self.up1(x5)  # Output: (batch_size, 128, 8, 8)
+        x6 = torch.cat([x6, x3], dim=1)  # Skip connection: (batch_size, 256, 8, 8)
+
+        x7 = self.up2(x6)  # Output: (batch_size, 64, 16, 16)
+        x7 = torch.cat([x7, x2], dim=1)  # Skip connection: (batch_size, 128, 16, 16)
+
+        x8 = self.up3(x7)  # Output: (batch_size, 32, 32, 32)
+        x8 = torch.cat([x8, x1], dim=1)  # Skip connection: (batch_size, 64, 32, 32)
+
+        # Final upsampling layer (without skip connection)
+        x9 = self.up4(x8)  # Output: (batch_size, 32, 64, 64)
+
+        x10 = self.up4_1(x9)  # Extra refinement layer: (batch_size, 32, 128, 128)
+
+        # Final layer to get the output
+        out = self.final(x10)  # Output: (batch_size, 3, 64, 64)
+        return out
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # I used this for Image Size: 128x128
 class GeneratorUNet128(nn.Module):
     def __init__(self, in_channels=3, out_channels=3, base_filters=64, num_downs=5):
@@ -131,117 +252,3 @@ class GeneratorUNet128(nn.Module):
         out = self.final(x11)  # Output: (batch_size, 3, 128, 128)
         return out
 
-
-
-
-
-
-
-
-
-
-
-
-
-# I used this for Image Size: 64*64
-class GeneratorUNet(nn.Module):
-    def __init__(self, in_channels=3, out_channels=3, base_filters=32, num_downs=4):
-        super(GeneratorUNet, self).__init__()
-
-        # Encoder (Downsampling)
-        self.down1 = nn.Sequential(
-            nn.Conv2d(in_channels, base_filters, 4, 2, 1),  # Output: (batch_size, 32, 32, 32)
-            nn.LeakyReLU(0.2, True)
-        )
-
-        self.down2 = nn.Sequential(
-            nn.Conv2d(base_filters, base_filters * 2, 4, 2, 1),  # Output: (batch_size, 64, 16, 16)
-            nn.BatchNorm2d(base_filters * 2),
-            nn.LeakyReLU(0.2, True)
-        )
-
-        self.down3 = nn.Sequential(
-            nn.Conv2d(base_filters * 2, base_filters * 4, 4, 2, 1),  # Output: (batch_size, 128, 8, 8)
-            nn.BatchNorm2d(base_filters * 4),
-            nn.LeakyReLU(0.2, True)
-        )
-
-        self.down4 = nn.Sequential(
-            nn.Conv2d(base_filters * 4, base_filters * 8, 4, 2, 1),  # Output: (batch_size, 256, 4, 4)
-            nn.BatchNorm2d(base_filters * 8),
-            nn.LeakyReLU(0.2, True)
-        )
-
-        self.bottleneck = nn.Sequential(
-            nn.Conv2d(base_filters * 8, base_filters * 8, 3, 1, 1),  # Output: (batch_size, 256, 4, 4)
-            nn.BatchNorm2d(base_filters * 8),
-            nn.ReLU(True),
-            nn.Conv2d(base_filters * 8, base_filters * 8, 3, 1, 1),  # Output: (batch_size, 256, 4, 4)
-            nn.BatchNorm2d(base_filters * 8),
-            nn.ReLU(True)
-        )
-
-        # Decoder (Upsampling)
-        self.up1 = nn.Sequential(
-            nn.ConvTranspose2d(base_filters * 8, base_filters * 4, 4, 2, 1),  # Output: (batch_size, 128, 8, 8)
-            nn.BatchNorm2d(base_filters * 4),
-            nn.LeakyReLU(0.2, True)
-        )
-
-        self.up2 = nn.Sequential(
-            nn.ConvTranspose2d(base_filters * 4 + base_filters * 4, base_filters * 2, 4, 2, 1),  # Output: (batch_size, 64, 16, 16)
-            nn.BatchNorm2d(base_filters * 2),
-            nn.LeakyReLU(0.2, True)
-        )
-
-        self.up3 = nn.Sequential(
-            nn.ConvTranspose2d(base_filters * 2 + base_filters * 2, base_filters, 4, 2, 1),  # Output: (batch_size, 32, 32, 32)
-            nn.BatchNorm2d(base_filters),
-            nn.LeakyReLU(0.2, True)
-        )
-
-        self.up4 = nn.Sequential(
-            nn.ConvTranspose2d(base_filters + base_filters, base_filters, 4, 2, 1),   # Output: (batch_size, 32, 64, 64)
-            nn.BatchNorm2d(base_filters),
-            nn.LeakyReLU(0.2, True)
-        )
-        
-        self.up4_1 = nn.Sequential(
-            nn.Conv2d(base_filters, base_filters, kernel_size=3, stride=1, padding=1),  # Output: (batch_size, 32, 64, 64)
-            nn.BatchNorm2d(base_filters),
-            nn.LeakyReLU(0.2, inplace=True)
-        )
-
-        self.final = nn.Sequential(
-            nn.Conv2d(base_filters, out_channels, 3, 1, 1),  # Output: (batch_size, 3, 64, 64)
-            nn.Tanh() 
-        )
-    
-    def forward(self, x):
-        # Encoder path with downsampling
-        x1 = self.down1(x)  # Output: (batch_size, 32, 32, 32)
-        x2 = self.down2(x1)  # Output: (batch_size, 64, 16, 16)
-        x3 = self.down3(x2)  # Output: (batch_size, 128, 8, 8)
-        x4 = self.down4(x3)  # Output: (batch_size, 256, 4, 4)
-
-        # Bottleneck
-        x5 = self.bottleneck(x4)  # Output: (batch_size, 256, 4, 4)
-
-        # Decoder path with upsampling and skip connections
-        x6 = self.up1(x5)  # Output: (batch_size, 128, 8, 8)
-        x6 = torch.cat([x6, x3], dim=1)  # Skip connection: (batch_size, 256, 8, 8)
-
-        x7 = self.up2(x6)  # Output: (batch_size, 64, 16, 16)
-        x7 = torch.cat([x7, x2], dim=1)  # Skip connection: (batch_size, 128, 16, 16)
-
-        x8 = self.up3(x7)  # Output: (batch_size, 32, 32, 32)
-        x8 = torch.cat([x8, x1], dim=1)  # Skip connection: (batch_size, 64, 32, 32)
-
-        # Final upsampling layer (without skip connection)
-        x9 = self.up4(x8)  # Output: (batch_size, 32, 64, 64)
-
-        x10 = self.up4_1(x9)  # Extra refinement layer: (batch_size, 32, 128, 128)
-
-        # Final layer to get the output
-        out = self.final(x10)  # Output: (batch_size, 3, 64, 64)
-        return out
