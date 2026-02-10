@@ -20,7 +20,7 @@ Key challenges addressed:
 * Translating high-frequency visual textures into symbolic map representations
 * Achieving stable GAN training with limited paired data
 
-The dataset consists of **~1000 paired satellite–map image pairs**, enabling supervised image translation.
+The dataset consists of **~1500 paired satellite–map image pairs**, enabling supervised image translation.
 
 ---
 
@@ -39,7 +39,7 @@ The model is trained using a **multi-term loss function**:
 
 * **Adversarial Loss** – encourages realistic map generation
 * **L1 Reconstruction Loss** – enforces pixel-level alignment with ground truth
-* *(Optional)* **SSIM-based loss** – improves structural similarity
+* **SSIM-based loss** – improves structural similarity
 
 This combination balances **visual realism** and **quantitative accuracy**, making the system suitable for both academic evaluation and applied use.
 
@@ -69,28 +69,46 @@ This dual evaluation approach aligns with industry standards for generative visi
 ## 🛠️ Technologies & Tools
 
 ### Core Frameworks
-
 * **Python**
 * **PyTorch** – deep learning framework
 * **Torchvision** – datasets, transforms, and utilities
 
 ### Computer Vision & ML Concepts
-
 * Conditional GANs (cGAN)
 * Image-to-Image Translation
 * Adversarial Learning
 * U-Net Architecture
 * PatchGAN Discriminator
-* Perceptual & Reconstruction Losses
+* Reconstruction Loss (L1)
+* Adversarial Loss
+* Structural Similarity (SSIM)
+* Peak Signal-to-Noise Ratio (PSNR)
 
 ### Experimentation & Development
+* **OpenCV** – post-processing and image enhancement
+* **PIL (Pillow)** – image loading and preprocessing
+* **Matplotlib** – qualitative visualization
+* **tqdm** – training and evaluation progress tracking
 
-* **NumPy** – numerical operations
-* **OpenCV / PIL** – image processing
-* **Matplotlib** – visualization
-* **tqdm** – training progress tracking
+### Data Handling & Evaluation
+* **Custom PyTorch Dataset & DataLoader**
+* **Random / OS utilities** – sampling and file management
+* **scikit-image** – SSIM / PSNR computation
+
+### UI & Deployment
+* **Gradio** – interactive web-based model demo
+* **Flask** – backend API for handcrafted UI
+* **HTML / CSS / JavaScript** – frontend interface
+
+### Development Environment
+* **Jupyter Notebook**
+* **CUDA** – GPU acceleration
+* **Conda / Virtual Environments**
+
 
 ---
+
+```
 
 satellite2map_cgan/
 ├── data/
