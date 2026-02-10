@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-This project implements **Conditional Generative Adversarial Networks (cGANs)** to translate **satellite images** into **map-style images**. The system uses a **pretrained pix2pix generator** fine-tuned on 64×64 images and is designed to be modular, reproducible, and Colab GPU-friendly.
+This project implements **Conditional Generative Adversarial Networks (cGANs)** to translate **satellite images** into **map-style images**. The system uses a **pretrained pix2pix generator** fine-tuned on 128x128 images and is designed to be modular, reproducible, and Colab GPU-friendly.
 
 ---
 
@@ -10,30 +10,26 @@ This project implements **Conditional Generative Adversarial Networks (cGANs)** 
 
 **Input:**
 
-* Satellite image, 64×64 pixels, RGB
+* Satellite image, 128×128 pixels, RGB
 * Normalized to [-1, 1]
 
 **Output:**
 
-* Map image, 64×64 pixels, RGB
+* Map image, 128x128 pixels, RGB
 * Normalized to [-1, 1]
 
-**Train/Validation Split:** 80% train / 20% validation
+**Train/Validation Split:** 70% train / 15% validation / 15% test
 
 ---
 
-## 3. Generator Architecture (U-Net, Pretrained)
+## 3. Generator Architecture (U-Net)
 
 * **Type:** U-Net encoder-decoder with skip connections
-* **Input:** 64×64×3
-* **Encoder:** 5 layers, filters increasing 32 → 256
+* **Input:** 128×128×3
+* **Encoder:** 5 layers, filters increasing from base_filters 64
 * **Decoder:** 5 layers, mirrors encoder, skip connections applied
 * **Output Activation:** tanh
-* **Pretrained Weights:** Fine-tuning from a similar dataset
-* **Fine-tuning Strategy:**
-
-  * Freeze first 2–3 layers initially
-  * Unfreeze all layers after stabilization
+* **Weights:** Training from a scrach with a pix2pix dataset
 
 ---
 
@@ -41,7 +37,7 @@ This project implements **Conditional Generative Adversarial Networks (cGANs)** 
 
 * **Type:** PatchGAN
 * **Input:** Generated or real map image concatenated with corresponding satellite image
-* **Patch Size:** 16×16 (for 64×64 images)
+* **Patch Size:** 32×32 (for 128×128 images)
 * **Layers:** Convolutional layers with LeakyReLU activations
 * **Output:** Patch-level real/fake scores
 
@@ -49,9 +45,9 @@ This project implements **Conditional Generative Adversarial Networks (cGANs)** 
 
 ## 5. Loss Functions and Weights
 
-* **L1 Reconstruction Loss:** λ_L1 = 100
+* **L1 Reconstruction Loss:** λ_L1 = 200
 * **Adversarial Loss (GAN):** encourages realism
-* **Optional SSIM Loss:** improves structural similarity
+* **SSIM Loss:** improves structural similarity
 
 ---
 
@@ -67,28 +63,28 @@ This project implements **Conditional Generative Adversarial Networks (cGANs)** 
 
 ---
 
-## 7. Training Strategy (Colab GPU Constraints)
+## 7. Training Strategy (cpu)
 
 * **Batch Size:** 8
 * **Optimizer:** Adam (lr = 2e-4, β1 = 0.5)
-* **Epochs:** 50–100 for 64×64 prototyping
+* **Epochs:** 50 (max) for 128×128
 * **Data Augmentation:** random flips, rotations
 * **Training Phases:**
 
   1. **Baseline:** generator only, L1 loss, sanity check and benchmark
-  2. **Full pix2pix GAN:** generator + discriminator, L1 + adversarial loss
+  2. **Full pix2pix GAN:** generator + discriminator, L1 + adversarial loss + ssim loss
 
 ---
 
 ## 8. System Diagram
 
 ```
-Satellite Image (64x64) 
+Satellite Image (128x128) 
          |
          v
    [Generator U-Net]
          |
-Generated Map (64x64)
+Generated Map (128x128)
          |
          v
    [PatchGAN Discriminator]
