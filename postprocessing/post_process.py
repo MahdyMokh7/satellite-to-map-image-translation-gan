@@ -27,7 +27,7 @@ def post_process_image(
     if apply_sharpen == "heavy":
         blurred = cv2.GaussianBlur(img, (5, 5), 0)        
         # Heavier sharpening 
-        sharpened = cv2.addWeighted(img, 1.5, blurred, -0.5, 0)
+        img = cv2.addWeighted(img, 1.5, blurred, -0.5, 0)
 
     return img
 

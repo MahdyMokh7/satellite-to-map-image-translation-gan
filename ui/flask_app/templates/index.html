@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Satellite → Map Translation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Satellite → Map Translation</h1>
+
+        <!-- Upload Form -->
+        <form action="/predict" method="POST" enctype="multipart/form-data" class="upload-form">
+            <input type="file" name="image" accept="image/*" required>
+            <br><br>
+            <button type="submit">Generate Map</button>
+        </form>
+
+        <!-- Display Images -->
+        {% if input_image or output_image %}
+        <div class="images">
+            {% if input_image %}
+            <div class="image-box">
+                <h3>Input Satellite</h3>
+                <img src="{{ url_for('static', filename=input_image) }}" alt="Input Satellite Image">
+            </div>
+            {% endif %}
+
+            {% if output_image %}
+            <div class="image-box">
+                <h3>Generated Map</h3>
+                <img src="{{ url_for('static', filename=output_image) }}" alt="Generated Map Image">
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -11,7 +11,7 @@ import yaml
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, root_dir)
 
-from models.generator import GeneratorUNet128
+from models.generator import GeneratorUNet
 from preprocessing.preprocess_data import preprocess_image_for_ui
 from postprocessing.post_process import post_process_image
 
@@ -24,7 +24,7 @@ with open(config_file_path, "r") as f:
     config = yaml.safe_load(f)
 
 # ---- Load model ----
-model = GeneratorUNet128(
+model = GeneratorUNet(
     in_channels=config['generator']['in_channels'], 
     out_channels=config['generator']['out_channels'], 
     base_filters=config['generator']['base_filters'], 
@@ -53,7 +53,7 @@ def generate_map(input_image: Image.Image):
     with torch.no_grad():
         output_tensor = model(input_tensor)
 
-    output_image = postprocess_image(output_tensor, apply_sharpen=True)
+    output_image = postprocess_image(output_tensor, apply_sharpen='heavy')
     
     return output_image
 

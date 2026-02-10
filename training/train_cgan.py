@@ -164,7 +164,7 @@ def validate(epoch):
 
 def save_history_and_exit(history):
     """Helper function to save history and exit cleanly."""
-    history_path = os.path.join(logging_config["logging_dir"], "history.npy")
+    history_path = os.path.join(root_dir, logging_config["logging_dir"], "history.npy")
     np.save(history_path, history)
     logger.info(f"Training history saved at {history_path}")
     sys.exit(0)  # Exit the program cleanly

@@ -94,34 +94,59 @@ This dual evaluation approach aligns with industry standards for generative visi
 
 satellite2map_cgan/
 ├── data/
-│   ├── raw/      
-│   └── processed/  
-│       ├── train/   
+│   ├── raw/
+│   └── processed/
+│       ├── train/
 │       ├── val/
-│       └── test/   
+│       └── test/
+│
 ├── models/
 │   ├── generator.py
 │   ├── discriminator.py
 │   └── pretrained/
+│
 ├── training/
 │   ├── train_baseline.py
 │   └── train_pix2pix.py
+│
 ├── evaluation/
 │   ├── metrics.py
 │   └── visualize.py
+│
+├── preprocessing/
+│   └── preprocess_data.py
+│
+├── postprocessing/
+│   └── post_process.py
+│
 ├── utils/
 │   ├── dataloader.py
 │   └── helpers.py
-├── preprocessing/ 
-│   └── preprocess_data.py   
+│
+├── ui/
+│   └── gradio_app.py
+│
 ├── results/
 │   ├── samples/
-│   └── checkpoints/
+│   ├── checkpoints/
+│   └── logs/
+│
 ├── notebooks/
 │   ├── phase1_data_validation.ipynb
-│   ├── phase2_design.ipynb
+│   ├── phase4_baseline_results.ipynb
+│   ├── phase5_cgan_results.ipynb
+│   └── phase6_evaluation.ipynb
+│
 ├── configs/
 │   └── config.yaml
+│
+├── docs/
+│   └── project.pdf
+│
+├── tests/
+│   ├── test_generator.py
+│   └── test_training_step.py
+│
 ├── pipeline.ipynb
 ├── DESIGN.md
 ├── README.md
@@ -129,6 +154,7 @@ satellite2map_cgan/
 ├── requirements.txt
 ├── .gitignore
 └── LICENSE
+
 
 ```
 
